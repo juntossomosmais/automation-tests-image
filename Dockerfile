@@ -16,28 +16,13 @@ RUN npm --version
 RUN java -version 
 
 # Install essential packages and dependencies
-RUN apt-get update && \
-    apt-get install -y \
-    openjdk-11-jdk \
-    maven \
-    wget \
-    unzip \
-    xvfb \
-    libxi6 \
-    libgconf-2-4 \
-    gnupg \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Fetch the latest stable Chrome version and install Chrome and ChromeDriver
-RUN CHROME_VERSION=$(curl -sSL https://googlechromelabs.github.io/chrome-for-testing/ | awk -F 'Version:' '/Stable/ {print $2}' | awk '{print $1}' | sed 's/<code>//g; s/<\/code>//g') && \
-    CHROME_URL="https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chrome-linux64.zip" && \
-    echo "Fetching Chrome version: ${CHROME_VERSION}" && \
-    curl -sSL ${CHROME_URL} -o /tmp/chrome-linux64.zip && \
-    mkdir -p /opt/google/chrome && \
-    mkdir -p /usr/local/bin && \
-    unzip -q /tmp/chrome-linux64.zip -d /opt/google/chrome && \
-    rm /tmp/chrome-linux64.zip
+RUN apt-get update && apt-get install -y ca-certificates wget gnupg2
+RUN apt-get install -y --no-install-recommends graphicsmagick && rm -rf /var/lib/apt/lists/*
+# Chrome
+RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/chrome.list
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN set -x && apt-get update && apt-get install -y google-chrome-stable
+ENV CHROME_BIN /usr/bin/google-chrome
 
 # Instalar dependências do Cypress
 
@@ -58,4 +43,3 @@ EXPOSE 8080
 
 # Script para personalizar comandos 
 ENTRYPOINT ["./entrypoint.sh", "npx", "cypress", "run"]
-
