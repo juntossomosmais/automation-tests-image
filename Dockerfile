@@ -15,28 +15,29 @@ RUN npm --version
 # Exibe a versão do Java
 RUN java -version 
 
-# Instalar o Google Chrome
-# Definir variáveis de ambiente para evitar prompts interativos
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Atualiza a lista de pacotes e instala dependências necessárias
-RUN apt-get update && apt-get install -y \
+# Install essential packages and dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    openjdk-11-jdk \
+    maven \
     wget \
+    unzip \
+    xvfb \
+    libxi6 \
+    libgconf-2-4 \
     gnupg \
-    ca-certificates
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Adiciona a chave GPG do Google Chrome e o repositório
-RUN wget -q -O /usr/share/keyrings/google-chrome-keyring.gpg https://dl.google.com/linux/linux_signing_key.pub \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
-
-# Atualiza a lista de pacotes novamente e instala o Google Chrome
-RUN apt-get update && apt-get install -y google-chrome-stable
-
-# Limpeza para reduzir o tamanho da imagem
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Definir o comando padrão para a imagem (opcional, depende do uso do Chrome)
-CMD ["google-chrome", "--version"]
+# Fetch the latest stable Chrome version and install Chrome and ChromeDriver
+RUN CHROME_VERSION=$(curl -sSL https://googlechromelabs.github.io/chrome-for-testing/ | awk -F 'Version:' '/Stable/ {print $2}' | awk '{print $1}' | sed 's/<code>//g; s/<\/code>//g') && \
+    CHROME_URL="https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chrome-linux64.zip" && \
+    echo "Fetching Chrome version: ${CHROME_VERSION}" && \
+    curl -sSL ${CHROME_URL} -o /tmp/chrome-linux64.zip && \
+    mkdir -p /opt/google/chrome && \
+    mkdir -p /usr/local/bin && \
+    unzip -q /tmp/chrome-linux64.zip -d /opt/google/chrome && \
+    rm /tmp/chrome-linux64.zip
 
 # Instalar dependências do Cypress
 
