@@ -40,7 +40,7 @@ O contêiner expõe a porta 8080, que pode ser mapeada para a máquina host. Cer
 
 	•	Java (default-jdk)
 	•	Allure Commandline (instalado globalmente via npm)
-	•	Outras dependências: curl, vim, git
+	•	Outras dependências: curl, vim, git, Chrome
 
 
 
