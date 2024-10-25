@@ -8,6 +8,26 @@ RUN apt-get update && apt-get install -y \
     git \
     default-jdk
 
+# Atualizar os pacotes existentes e instalar as dependências necessárias
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg2 \
+    ca-certificates \
+    --no-install-recommends
+
+
+# Baixar e instalar o repositório do Google Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable --no-install-recommends
+
+# Limpar cache do apt-get para reduzir o tamanho da imagem
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Verificar se o Google Chrome foi instalado corretamente
+RUN google-chrome --version  
+
 # Instalar o Node.js    
 RUN node --version
 RUN npm --version    
@@ -15,14 +35,16 @@ RUN npm --version
 # Exibe a versão do Java
 RUN java -version 
 
-# Install essential packages and dependencies
-RUN apt-get update && apt-get install -y ca-certificates wget gnupg2
-RUN apt-get install -y --no-install-recommends graphicsmagick && rm -rf /var/lib/apt/lists/*
-# Chrome
-RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/chrome.list
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN set -x && apt-get update && apt-get install -y google-chrome-stable
-ENV CHROME_BIN /usr/bin/google-chrome
+#Instala dependências necessárias
+RUN apt-get update && apt-get install -y \
+    libxi6 \
+    libgconf-2-4 \
+    libgtk-3-0 \
+    google-chrome-stable
+#Define variáveis de ambiente
+ENV DISPLAY=:99
+ENV CHROME_FLAGS "--no-sandbox --disable-gpu"
+
 
 # Instalar dependências do Cypress
 
