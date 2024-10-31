@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     --no-install-recommends
 
-
 # Baixar e instalar o repositório do Google Chrome
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
@@ -49,16 +48,23 @@ RUN npm --version
 # Exibe a versão do Java
 RUN java -version 
 
-#Instala dependências necessárias
+# Instala dependências necessárias
 RUN apt-get update && apt-get install -y \
     libxi6 \
     libgconf-2-4 \
     libgtk-3-0 \
     google-chrome-stable
-#Define variáveis de ambiente
+
+# Define variáveis de ambiente
 ENV DISPLAY=:99
 ENV CHROME_FLAGS "--no-sandbox --disable-gpu"
 
+# Instalar o kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Instalar o Azure CLI (az)
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Instalar dependências do Cypress
 
