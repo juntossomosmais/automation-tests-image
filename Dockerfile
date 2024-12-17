@@ -59,12 +59,9 @@ RUN apt-get update && apt-get install -y \
 ENV DISPLAY=:99
 ENV CHROME_FLAGS "--no-sandbox --disable-gpu"
 
-# Instalar o kubectl
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-    && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
-# Instalar o Azure CLI (az)
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+# Instalar o Azure CLI (az), kubectl and kubelogin
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash \
+    && az aks install-cli
 
 # Instalar dependências do Cypress
 
