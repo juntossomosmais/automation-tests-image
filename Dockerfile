@@ -35,6 +35,12 @@ RUN apt-get update && \
     xvfb \
     && apt-get clean   
 
+# Instala o K6
+RUN pt-get update && apt-get install -y gnupg software-properties-common
+    curl -s https://dl.k6.io/key.gpg | apt-key add -
+    echo "deb https://dl.k6.io/deb stable main" | tee /etc/apt/sources.list.d/k6.list
+    apt-get update && apt-get install -y k6
+    
 # Limpar cache do apt-get para reduzir o tamanho da imagem
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
