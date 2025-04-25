@@ -74,12 +74,6 @@ RUN npx cypress install
 # Browserlist
 RUN npx browserslist@latest
 
-# Instalar o K6
-RUN apt-get update && apt-get install -y gnupg software-properties-common && \
-    curl -s https://dl.k6.io/key.gpg | apt-key add - && \
-    echo "deb https://dl.k6.io/deb stable main" | tee /etc/apt/sources.list.d/k6.list && \
-    apt-get update && apt-get install -y k6
-
 # Definir o diretório de trabalho dentro do contêiner
 WORKDIR /usr/src/app
 
