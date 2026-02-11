@@ -1,84 +1,71 @@
-# Use a imagem base oficial do Cypress
-FROM cypress/base:latest
+# Imagem base do Cypress (já vem com Node e forcei a versao)
+FROM cypress/base:20.17.0
 
-# Atualizar o repositório de pacotes e instalar pacotes necessários
-RUN apt-get update && apt-get install -y \
-    curl \
-    vim \
-    git \
-    default-jdk
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Atualizar os pacotes existentes e instalar as dependências necessárias
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg2 \
-    ca-certificates \
-    --no-install-recommends
+# Variáveis úteis
+ENV HUSKY=0 \
+    DISPLAY=:99 \
+    CHROME_FLAGS="--no-sandbox --disable-gpu" \
+    CYPRESS_CACHE_FOLDER=/root/.cache/Cypress
 
-# Baixar e instalar o repositório do Google Chrome
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable --no-install-recommends
+# Dependências do SO + Chrome + Java (tudo em um RUN para reduzir layers)
+RUN   install -m 0755 -d /etc/apt/keyrings \
+      && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+      | gpg --dearmor -o /etc/apt/keyrings/google-linux.gpg \
+      && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-linux.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
+      > /etc/apt/sources.list.d/google-chrome.list \
+      && curl -fsSL https://dl.k6.io/key.gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/k6.gpg \
+      && echo "deb [signed-by=/etc/apt/keyrings/k6.gpg] https://dl.k6.io/deb stable main" \
+      > /etc/apt/sources.list.d/k6.list \
+      && apt-get update \
+      && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      git \
+      gnupg \
+      wget \
+      default-jdk \
+      # libs comuns para Chrome/Cypress em headless
+      xvfb \
+      xauth \
+      libgtk-3-0 \
+      libgbm1 \
+      libnotify4 \
+      libnss3 \
+      libxss1 \
+      libasound2 \
+      libxtst6 \
+      libxi6 \
+      libgconf-2-4 \
+      # Chrome
+      google-chrome-stable \
+      # k6
+      k6 \
+      # limpeza
+      && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y \
-    libgtk2.0-0 \
-    libgtk-3-0 \
-    libgbm-dev \
-    libnotify-dev \
-    libnss3 \
-    libxss1 \
-    libasound2 \
-    libxtst6 \
-    xauth \
-    xvfb \
-    && apt-get clean   
-    
-# Limpar cache do apt-get para reduzir o tamanho da imagem
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Verificar se o Google Chrome foi instalado corretamente
-RUN google-chrome --version  
-
-# Instalar o Node.js    
-RUN node --version
-RUN npm --version    
-
-# Exibe a versão do Java
-RUN java -version 
-
-# Instala dependências necessárias
-RUN apt-get update && apt-get install -y \
-    libxi6 \
-    libgconf-2-4 \
-    libgtk-3-0 \
-    google-chrome-stable
-
-# Define variáveis de ambiente
-ENV DISPLAY=:99
-ENV CHROME_FLAGS "--no-sandbox --disable-gpu"
-
-# Instalar o Azure CLI (az), kubectl and kubelogin
+# Azure CLI + kubectl (aks install-cli)
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash \
-    && az aks install-cli
+  && az aks install-cli
 
-# Instalar dependências do Cypress
+# Allure (global)
+RUN npm install -g allure-commandline
 
-# Instalar globalmente o allure-commandline
-RUN npm install -g allure-commandline 
+# Home
+WORKDIR /home/cypress
 
-# Baixar e instalar o binário do Cypress
-RUN npx cypress install
+COPY . .
 
-# Browserlist
-RUN npx browserslist@latest
+RUN npm ci
 
-# Definir o diretório de trabalho dentro do contêiner
-WORKDIR /usr/src/app
+# Garante binário do Cypress no build
+RUN npx --no-install cypress verify || npx cypress install
 
-# Expor uma porta (se o contêiner for servir uma aplicação)
+RUN chmod +x /home/cypress/entrypoint.sh
+
 EXPOSE 8080
 
-# Script para personalizar comandos 
-ENTRYPOINT ["./entrypoint.sh", "npx", "cypress", "run"]
+ENTRYPOINT ["./entrypoint.sh"]
