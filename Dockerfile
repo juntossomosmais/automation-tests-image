@@ -30,7 +30,7 @@ RUN   apt-get update \
       libxi6 \
       libgconf-2-4
 
-# Dependências do SO + Chrome + Java (tudo em um RUN para reduzir layers)
+# Dependências do SO + Chrome + Java (tudo em um RUN para reduzir layers) 
 RUN   install -m 0755 -d /etc/apt/keyrings \
       && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
       | gpg --dearmor -o /etc/apt/keyrings/google-linux.gpg \
