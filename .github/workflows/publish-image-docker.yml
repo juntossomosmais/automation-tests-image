@@ -2,7 +2,7 @@ name: Build and publish packer
 on:
   push:
     branches:
-    - main
+    - feat/improve-pipe-runner-and-docker-configs
     paths:
     - 'Dockerfile'
 
