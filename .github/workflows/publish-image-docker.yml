@@ -26,5 +26,5 @@ jobs:
         push: true
         file: Dockerfile
         tags: |
-          ${{ github.repository }}:latest
+          ${{ github.repository }}:mauro
           ${{ github.repository }}:${{ github.sha }}
