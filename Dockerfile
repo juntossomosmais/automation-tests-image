@@ -66,8 +66,6 @@ RUN npm ci
 # Garante binário do Cypress no build
 RUN npx --no-install cypress verify || npx cypress install
 
-RUN chmod +x /home/cypress/entrypoint.sh
-
 EXPOSE 8080
 
 ENTRYPOINT ["./entrypoint.sh"]
