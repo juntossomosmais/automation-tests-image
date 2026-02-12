@@ -10,7 +10,7 @@ ENV HUSKY=0 \
     CHROME_FLAGS="--no-sandbox --disable-gpu" \
     CYPRESS_CACHE_FOLDER=/root/.cache/Cypress
 
-# Dependências do SO + Chrome + Java + k6 (tudo em um RUN para reduzir layers)
+# Dependências do SO + Chrome + Java + k6 (tudo em um RUN para reduzir layers) 
 RUN install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
     | gpg --dearmor -o /etc/apt/keyrings/google-linux.gpg \
